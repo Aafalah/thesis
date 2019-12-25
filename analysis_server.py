@@ -7,9 +7,9 @@ import time
 import json
 from sklearn.preprocessing import StandardScaler
 import joblib
-
+port = 13012
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_address = ("172.16.1.85", 10032)
+server_address = ("172.16.1.85", port)
 
 print('starting up on %s port %s' % server_address)
 serversocket.bind(server_address)
@@ -237,11 +237,11 @@ while True:
 
 	
 	while True:
-		data = connection.recv(43).decode()
+		data = connection.recv(47).decode()
 		print('received "%s"' % data)
 		if data:
 			print('new_file notification - Initiating Scanning procedure')
-			filename = data[-6:]
+			filename = data[-10:]
 			print("Filename: ", filename)
 			
 			url = "172.16.1.1/"+str(filename)
@@ -255,11 +255,14 @@ while True:
 				else:
 					 message = "0"
 				print('sending message: ', message)
-				try:
-					serversocket.sendall(message.encode())
-				except BrokenPipeError:
-					print("Done!")
-	
+				socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				gateway_address = ("172.16.1.1", port)
+				socket2.connect(gateway_address)
+				socket2.sendall(message.encode())
+				print("Sending complete!")
+				
+				
+					
 			
 			
 			#message = "Ack!"
